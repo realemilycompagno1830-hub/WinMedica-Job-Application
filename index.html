@@ -310,77 +310,77 @@
   </div>
 
   <script>
-    // ============================================================
-    // ⚠️  REPLACE THESE TWO VALUES WITH YOUR REAL SUPABASE KEYS
-    // ============================================================
-    const SUPABASE_URL = 'https://wubdmdvmcrpbiimpbwuk.supabase.co';          // e.g. https://xxxxx.supabase.co
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YmRtZHZtY3JwYmlpbXBid3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MjcwMzgsImV4cCI6MjEwNzUwMzAzOH0.ekCp7nF9drzwc8p9ba9KfqRlnB11xFPNUDE05iAedLQ'; // the long eyJ... key
+  // ============================================================
+  // ⚠️  REPLACE THESE TWO VALUES WITH YOUR REAL SUPABASE KEYS
+  // ============================================================
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';          // e.g. https://xxxxx.supabase.co
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // the long eyJ... key
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Fixed: use a different name to avoid conflict
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById('applicationForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const errorMsg = document.getElementById('errorMsg');
-    const successModal = document.getElementById('successModal');
-    const closeModal = document.getElementById('closeModal');
+  const form = document.getElementById('applicationForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorMsg = document.getElementById('errorMsg');
+  const successModal = document.getElementById('successModal');
+  const closeModal = document.getElementById('closeModal');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault(); // ← This stops the URL from changing
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      errorMsg.style.display = 'none';
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
+    errorMsg.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
 
-      const formData = {
-        full_name: document.getElementById('fullName').value.trim(),
-        address: document.getElementById('address').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        date_of_birth: document.getElementById('dob').value,
-        country: document.getElementById('country').value.trim()
-      };
+    const formData = {
+      full_name: document.getElementById('fullName').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      date_of_birth: document.getElementById('dob').value,
+      country: document.getElementById('country').value.trim()
+    };
 
-      try {
-        const { data, error } = await supabase
-          .from('job_applications')
-          .insert([formData]);
+    try {
+      const { data, error } = await supabaseClient
+        .from('job_applications')
+        .insert([formData]);
 
-        if (error) {
-          throw error;
-        }
-
-        // Success
-        form.reset();
-        successModal.classList.add('show');
-      } catch (err) {
-        console.error('Full error:', err);
-        errorMsg.style.display = 'block';
-
-        // Show helpful message
-        if (err.message && err.message.includes('Invalid API key')) {
-          errorMsg.textContent = 'Error: Supabase API key is wrong or still has the placeholder text.';
-        } else if (err.message && err.message.includes('relation') && err.message.includes('does not exist')) {
-          errorMsg.textContent = 'Error: Table "job_applications" does not exist. Please create it in Supabase.';
-        } else if (err.code === '42501' || (err.message && err.message.includes('permission'))) {
-          errorMsg.textContent = 'Error: Permission denied. You need to create an INSERT policy in Supabase.';
-        } else {
-          errorMsg.textContent = 'Error: ' + (err.message || 'Something went wrong. Check the browser console (F12).');
-        }
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Application';
+      if (error) {
+        throw error;
       }
-    });
 
-    closeModal.addEventListener('click', () => {
+      // Success
+      form.reset();
+      successModal.classList.add('show');
+    } catch (err) {
+      console.error('Full error:', err);
+      errorMsg.style.display = 'block';
+
+      if (err.message && err.message.includes('Invalid API key')) {
+        errorMsg.textContent = 'Error: Supabase API key is wrong or still has the placeholder text.';
+      } else if (err.message && err.message.includes('relation') && err.message.includes('does not exist')) {
+        errorMsg.textContent = 'Error: Table "job_applications" does not exist. Please create it in Supabase.';
+      } else if (err.code === '42501' || (err.message && err.message.includes('permission'))) {
+        errorMsg.textContent = 'Error: Permission denied. You need to create an INSERT policy in Supabase.';
+      } else {
+        errorMsg.textContent = 'Error: ' + (err.message || 'Something went wrong. Check the browser console (F12).');
+      }
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Application';
+    }
+  });
+
+  closeModal.addEventListener('click', () => {
+    successModal.classList.remove('show');
+  });
+
+  successModal.addEventListener('click', (e) => {
+    if (e.target === successModal) {
       successModal.classList.remove('show');
-    });
-
-    successModal.addEventListener('click', (e) => {
-      if (e.target === successModal) {
-        successModal.classList.remove('show');
-      }
-    });
-  </script>
+    }
+  });
+</script>
 </body>
 </html>
