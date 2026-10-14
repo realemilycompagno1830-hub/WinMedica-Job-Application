@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Application</title>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
@@ -35,7 +34,6 @@
       position: relative;
     }
 
-    /* Header with logo */
     .header {
       display: flex;
       justify-content: space-between;
@@ -47,8 +45,8 @@
       font-size: 28px;
       font-weight: 700;
       letter-spacing: -0.5px;
-      color: #111;
-      border-bottom: 3px solid #111;
+      color: #c62828;               /* ← Red title */
+      border-bottom: 3px solid #e53935; /* ← Red underline */
       padding-bottom: 6px;
       display: inline-block;
     }
@@ -100,8 +98,7 @@
     }
 
     input,
-    textarea,
-    select {
+    textarea {
       width: 100%;
       padding: 12px 14px;
       border: 1.5px solid #e0e0e0;
@@ -113,12 +110,11 @@
     }
 
     input:focus,
-    textarea:focus,
-    select:focus {
+    textarea:focus {
       outline: none;
-      border-color: #333;
+      border-color: #e53935;
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12);
     }
 
     textarea {
@@ -141,7 +137,6 @@
       }
     }
 
-    /* RED SUBMIT BUTTON */
     .submit-btn {
       margin-top: 12px;
       padding: 14px 28px;
@@ -172,7 +167,7 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.45);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -213,6 +208,7 @@
       justify-content: center;
       margin: 0 auto 20px;
       font-size: 28px;
+      color: #2e7d32;
     }
 
     .modal h2 {
@@ -229,7 +225,7 @@
 
     .modal-close {
       padding: 10px 24px;
-      background: #111;
+      background: #e53935;
       color: #fff;
       border: none;
       border-radius: 8px;
@@ -239,14 +235,17 @@
     }
 
     .modal-close:hover {
-      background: #333;
+      background: #c62828;
     }
 
     .error-message {
       color: #c62828;
       font-size: 14px;
-      margin-top: 8px;
+      margin-top: 10px;
       display: none;
+      background: #ffebee;
+      padding: 10px 14px;
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -254,7 +253,6 @@
   <div class="container">
     <div class="header">
       <h1>JOB APPLICATION</h1>
-      <!-- Logo placeholder – replace the src with your logo URL or path -->
       <div class="logo-placeholder" id="logoArea">
         <img src="" alt="Your Logo" id="logoImg" style="display:none;">
         <span id="logoText">Your<br>Logo</span>
@@ -313,18 +311,13 @@
 
   <script>
     // ============================================================
-    // SUPABASE CONFIGURATION
-    // Replace these with your own Supabase project values
+    // ⚠️  REPLACE THESE TWO VALUES WITH YOUR REAL SUPABASE KEYS
     // ============================================================
-    const SUPABASE_URL = 'https://wubdmdvmcrpbiimpbwuk.supabase.co';          // e.g. 'https://xxxxx.supabase.co'
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YmRtZHZtY3JwYmlpbXBid3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MjcwMzgsImV4cCI6MjEwNzUwMzAzOH0.ekCp7nF9drzwc8p9ba9KfqRlnB11xFPNUDE05iAedLQ'; // from Project Settings → API
+    const SUPABASE_URL = 'https://wubdmdvmcrpbiimpbwuk.supabase.co';          // e.g. https://xxxxx.supabase.co
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YmRtZHZtY3JwYmlpbXBid3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MjcwMzgsImV4cCI6MjEwNzUwMzAzOH0.ekCp7nF9drzwc8p9ba9KfqRlnB11xFPNUDE05iAedLQ'; // the long eyJ... key
 
-    // Initialize Supabase client
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ============================================================
-    // Form handling
-    // ============================================================
     const form = document.getElementById('applicationForm');
     const submitBtn = document.getElementById('submitBtn');
     const errorMsg = document.getElementById('errorMsg');
@@ -332,7 +325,8 @@
     const closeModal = document.getElementById('closeModal');
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+      e.preventDefault(); // ← This stops the URL from changing
+
       errorMsg.style.display = 'none';
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
@@ -343,25 +337,35 @@
         email: document.getElementById('email').value.trim(),
         phone: document.getElementById('phone').value.trim(),
         date_of_birth: document.getElementById('dob').value,
-        country: document.getElementById('country').value.trim(),
-        created_at: new Date().toISOString()
+        country: document.getElementById('country').value.trim()
       };
 
       try {
-        // Insert into Supabase table named "job_applications"
         const { data, error } = await supabase
           .from('job_applications')
           .insert([formData]);
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         // Success
         form.reset();
         successModal.classList.add('show');
       } catch (err) {
-        console.error(err);
-        errorMsg.textContent = 'Something went wrong. Please try again or contact us directly.';
+        console.error('Full error:', err);
         errorMsg.style.display = 'block';
+
+        // Show helpful message
+        if (err.message && err.message.includes('Invalid API key')) {
+          errorMsg.textContent = 'Error: Supabase API key is wrong or still has the placeholder text.';
+        } else if (err.message && err.message.includes('relation') && err.message.includes('does not exist')) {
+          errorMsg.textContent = 'Error: Table "job_applications" does not exist. Please create it in Supabase.';
+        } else if (err.code === '42501' || (err.message && err.message.includes('permission'))) {
+          errorMsg.textContent = 'Error: Permission denied. You need to create an INSERT policy in Supabase.';
+        } else {
+          errorMsg.textContent = 'Error: ' + (err.message || 'Something went wrong. Check the browser console (F12).');
+        }
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Application';
@@ -372,24 +376,11 @@
       successModal.classList.remove('show');
     });
 
-    // Close modal when clicking outside
     successModal.addEventListener('click', (e) => {
       if (e.target === successModal) {
         successModal.classList.remove('show');
       }
     });
-
-    // ============================================================
-    // Optional: Load your logo
-    // Uncomment and set the path/URL of your logo image
-    // ============================================================
-    /*
-    const logoImg = document.getElementById('logoImg');
-    const logoText = document.getElementById('logoText');
-    logoImg.src = 'your-logo.png';   // ← change this
-    logoImg.style.display = 'block';
-    logoText.style.display = 'none';
-    */
   </script>
 </body>
 </html>
