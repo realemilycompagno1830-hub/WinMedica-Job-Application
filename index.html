@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Application</title>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+      padding: 48px 40px;
+      position: relative;
+    }
+
+    /* Header with logo */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #111;
+      border-bottom: 3px solid #111;
+      padding-bottom: 6px;
+      display: inline-block;
+    }
+
+    .logo-placeholder {
+      width: 80px;
+      height: 80px;
+      border: 2px dashed #ccc;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 12px;
+      text-align: center;
+      background: #fafafa;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .logo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .subtitle {
+      color: #555;
+      font-size: 15px;
+      margin-bottom: 36px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #fafafa;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #333;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 520px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+      .container {
+        padding: 32px 24px;
+      }
+    }
+
+    /* RED SUBMIT BUTTON */
+    .submit-btn {
+      margin-top: 12px;
+      padding: 14px 28px;
+      background: #e53935;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .submit-btn:hover {
+      background: #c62828;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      background: #ef9a9a;
+      cursor: not-allowed;
+    }
+
+    /* Success Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s, visibility 0.25s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 32px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      transform: translateY(20px);
+      transition: transform 0.25s;
+    }
+
+    .modal-overlay.show .modal {
+      transform: translateY(0);
+    }
+
+    .modal-icon {
+      width: 56px;
+      height: 56px;
+      background: #e8f5e9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
+    }
+
+    .modal h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #111;
+    }
+
+    .modal p {
+      color: #555;
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .modal-close {
+      padding: 10px 24px;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-close:hover {
+      background: #333;
+    }
+
+    .error-message {
+      color: #c62828;
+      font-size: 14px;
+      margin-top: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>JOB APPLICATION</h1>
+      <!-- Logo placeholder – replace the src with your logo URL or path -->
+      <div class="logo-placeholder" id="logoArea">
+        <img src="" alt="Your Logo" id="logoImg" style="display:none;">
+        <span id="logoText">Your<br>Logo</span>
+      </div>
+    </div>
+
+    <p class="subtitle">Please complete the form below to apply for a position with us.</p>
+
+    <form id="applicationForm">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="full_name" required placeholder="Enter your full name">
+      </div>
+
+      <div class="form-group">
+        <label for="address">Current Home Address</label>
+        <textarea id="address" name="address" required placeholder="Street, City, State / Province, Zip Code"></textarea>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" required placeholder="+1 234 567 8900">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="dob">Date of Birth</label>
+          <input type="date" id="dob" name="date_of_birth" required>
+        </div>
+        <div class="form-group">
+          <label for="country">Country of Residence</label>
+          <input type="text" id="country" name="country" required placeholder="e.g. United States">
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Submit Application</button>
+      <p class="error-message" id="errorMsg"></p>
+    </form>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal">
+      <div class="modal-icon">✓</div>
+      <h2>Application Received</h2>
+      <p>We will review your application and get back to you.</p>
+      <button class="modal-close" id="closeModal">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // SUPABASE CONFIGURATION
+    // Replace these with your own Supabase project values
+    // ============================================================
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';          // e.g. 'https://xxxxx.supabase.co'
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // from Project Settings → API
+
+    // Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ============================================================
+    // Form handling
+    // ============================================================
+    const form = document.getElementById('applicationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const successModal = document.getElementById('successModal');
+    const closeModal = document.getElementById('closeModal');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      const formData = {
+        full_name: document.getElementById('fullName').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        date_of_birth: document.getElementById('dob').value,
+        country: document.getElementById('country').value.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        // Insert into Supabase table named "job_applications"
+        const { data, error } = await supabase
+          .from('job_applications')
+          .insert([formData]);
+
+        if (error) throw error;
+
+        // Success
+        form.reset();
+        successModal.classList.add('show');
+      } catch (err) {
+        console.error(err);
+        errorMsg.textContent = 'Something went wrong. Please try again or contact us directly.';
+        errorMsg.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Application';
+      }
+    });
+
+    closeModal.addEventListener('click', () => {
+      successModal.classList.remove('show');
+    });
+
+    // Close modal when clicking outside
+    successModal.addEventListener('click', (e) => {
+      if (e.target === successModal) {
+        successModal.classList.remove('show');
+      }
+    });
+
+    // ============================================================
+    // Optional: Load your logo
+    // Uncomment and set the path/URL of your logo image
+    // ============================================================
+    /*
+    const logoImg = document.getElementById('logoImg');
+    const logoText = document.getElementById('logoText');
+    logoImg.src = 'your-logo.png';   // ← change this
+    logoImg.style.display = 'block';
+    logoText.style.display = 'none';
+    */
+  </script>
+</body>
+</html>
